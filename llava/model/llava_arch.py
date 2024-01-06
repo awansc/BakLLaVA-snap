@@ -62,11 +62,13 @@ class LlavaMetaModel:
 
         self.mm_projector = build_vision_projector(self.config)
 
+#        if getattr(model_args, 'tune_mm_mlp_adapter', None):
+#            for module in self.mm_projector.modules():
+
         if pretrain_mm_mlp_adapter is not None:
             mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
             def get_w(weights, keyword):
                 return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
-
             self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
 
 

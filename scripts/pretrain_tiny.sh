@@ -5,6 +5,7 @@
 # MODEL_VERSION=vicuna-v1-3-7b
 # MODEL_VERSION=llama-2-7b-chat
 MODEL_VERSION=mistralai/Mistral-7B-v0.1
+#MODEL_VERSION=./BakLLaVA-1
 
 ########### DO NOT CHANGE ###########
 ########### USE THIS FOR BOTH ###########
@@ -23,14 +24,14 @@ deepspeed llava/train/train_mem.py \
     --version plain \
     --data_path pretrain_data/chat/blip_laion_cc_sbu_558k.json \
     --image_folder pretrain_data/images \
-    --vision_tower openai/clip-vit-large-patch14-336 \
+    --vision_tower wkcn/TinyCLIP-ViT-8M-16-Text-3M-YFCC15M \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/mistral-pretrain-vit-large \
+    --output_dir ./checkpoints/test-pretrain \
     --num_train_epochs 1 \
     --per_device_train_batch_size 32 \
     --per_device_eval_batch_size 4 \
@@ -47,7 +48,7 @@ deepspeed llava/train/train_mem.py \
     --tf32 True \
     --model_max_length 8000 \
     --gradient_checkpointing True \
-    --dataloader_num_workers 8 \
+    --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb
     

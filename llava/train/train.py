@@ -656,6 +656,16 @@ class LazySupervisedDataset(Dataset):
         return length_list
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
+        while i < len(self.list_data_dict):
+            try:
+                return self.fetch_next(i)
+            except Exception as e:
+                rank0_print("Skipping data due to error: ", e)
+                i = i + 1
+
+
+    def fetch_next(self, i) -> Dict[str, torch.Tensor]:
+#    def __getitem__(self, i) -> Dict[str, torch.Tensor]:
         sources = self.list_data_dict[i]
         if isinstance(i, int):
             sources = [sources]
@@ -788,10 +798,11 @@ def train():
                 cache_dir=training_args.cache_dir,
                 **bnb_model_from_pretrained_args
             )
-        elif 'mistral' in model_args.model_name_or_path:
+        elif 'mistral' in model_args.model_name_or_path or 'BakLLaVA' in model_args.model_name_or_path:
             model = LlavaMistralForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
+                ignore_mismatched_sizes=True,
                 **bnb_model_from_pretrained_args
             )
         else:
@@ -894,6 +905,8 @@ def train():
             model.requires_grad_(False)
             for p in model.get_model().mm_projector.parameters():
                 p.requires_grad = True
+#            print("Initializing weights for mm_projector...")
+#            model.get_model().mm_projector.apply(model.get_model()._init_weights)
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:
